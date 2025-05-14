@@ -32,4 +32,32 @@ class FileService
         }
         $file->delete();
     }
+
+    /**
+     * تخزين ملف جديد
+     *
+     * @param \Illuminate\Http\UploadedFile $file
+     * @param string $directory
+     * @return string
+     */
+    public function storeFile($file, $directory)
+    {
+        return Storage::disk('public')->put($directory, $file);
+    }
+
+    /**
+     * حذف ملف
+     *
+     * @param string $path
+     * @return bool
+     */
+    public function deleteFile($path)
+    {
+        if ($path && Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->delete($path);
+        }
+
+        return false;
+    }
 }
+

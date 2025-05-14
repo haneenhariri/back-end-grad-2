@@ -32,7 +32,7 @@ class UpdateRequest extends FormRequest
             'description.en' => ['string'],
             'description.ar' => ['string'],
             'price'=>['nullable','numeric'],
-            'cover' => ['required', 'file'],
+            'cover' => ['nullable', 'file'],
             'category_id'=>['nullable','exists:categories,id']
         ];
     }

@@ -41,6 +41,9 @@ Route::post('reset-password', [PasswordController::class, 'resetPassword']);
 Route::apiResource('courses', CourseController::class)->only('index');
 Route::get('categories', [CategoryController::class, 'index']);
 
+// مسارات الكورسات متعددة اللغات (جديدة)
+Route::get('multilingual/courses', [CourseController::class, 'indexMultilingual']);
+Route::get('multilingual/courses/{course}', [CourseController::class, 'showMultilingual']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [UserController::class, 'logout']);
@@ -100,7 +103,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('student-progress/update', [StudentProgressController::class, 'updateProgress']);
     Route::get('student-progress/course/{courseId}', [StudentProgressController::class, 'getCourseProgress']);
     Route::get('student-progress/all-courses', [StudentProgressController::class, 'getAllCoursesProgress']);
+
+    // مسار تحديث الكورس متعدد اللغات (جديد)
+    Route::post('multilingual/courses/{course}', [CourseController::class, 'updateMultilingual']);
 });
+
+
+
+
 
 
 
