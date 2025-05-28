@@ -15,7 +15,7 @@ class TransactionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'=>$this->id,
+            'id' => $this->id,
             'account_id' => $this->account_id,
             'intended_account_id' => $this->intended_account_id,
             'amount' => $this->amount,
@@ -23,13 +23,16 @@ class TransactionResource extends JsonResource
             'course' => $this->whenLoaded('course', function () {
                 return optional($this->course)->title;
             }),
+            'course_cover' => $this->whenLoaded('course', function () {
+                return optional($this->course)->cover;
+            }),
             'student' => $this->whenLoaded('account', function () {
                 return optional($this->account->user)->name;
             }),
             'instructor' => $this->whenLoaded('intendedAccount', function () {
                 return optional($this->intendedAccount->user)->name;
             }),
-
         ];
     }
 }
+

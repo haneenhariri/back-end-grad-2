@@ -56,10 +56,24 @@ class MessageController extends Controller
             // الرسائل المستلمة من المستخدم الآخر إلى المستخدم المسجل دخول
             $query->where('sender_id', $otherUserId)
                 ->where('received_id', $authUserId);
-        })->orderBy('created_at', 'asc') // ترتيب الرسائل حسب وقت الإرسال
+        })
+        ->with(['sender', 'recevied']) // تحميل بيانات المرسل والمستلم
+        ->orderBy('created_at', 'asc') // ترتيب الرسائل حسب وقت الإرسال
         ->get();
-        return self::success(MessageResource::collection($messages));
+
+        // إضافة معلومات المستخدم الآخر
+        $receiverInfo = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'profile_picture' => $user->profile_picture
+        ];
+
+        return self::success([
+            'messages' => MessageResource::collection($messages),
+            'receiver' => $receiverInfo
+        ]);
     }
 
 
 }
+

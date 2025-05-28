@@ -26,4 +26,5 @@ class StoreRequest extends FormRequest
             'answer'=>['required','string'],
         ];
     }
+    
 }

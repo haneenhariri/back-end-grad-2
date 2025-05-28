@@ -35,9 +35,11 @@ class CourseController extends Controller
      */
     public function store(StoreRequest $request)
     {
-        $this->courseService->store($request->validated());
-        return self::success();
-    }
+        $course = $this->courseService->store($request->validated());
+        return self::success([
+            'message' => 'تم إضافة الكورس بنجاح',
+            'course_id' => $course->id
+        ]);    }
 
     /**
      * Display the specified resource.
@@ -61,8 +63,28 @@ class CourseController extends Controller
      */
     public function destroy(Course $course)
     {
-        $course->delete();
-        return self::success(null, 'deleted successfully');
+        try {
+            // حذف السجلات المرتبطة يدوياً
+            \DB::table('course_user')->where('course_id', $course->id)->delete();
+
+            // حذف أي سجلات أخرى مرتبطة
+            \DB::table('rates')->where('course_id', $course->id)->delete();
+            \DB::table('transactions')->where('course_id', $course->id)->delete();
+            \DB::table('user_favorites')->where('course_id', $course->id)->delete();
+            \DB::table('student_progress')->where('course_id', $course->id)->delete();
+
+            // حذف الكورس
+            $course->delete();
+
+            return self::success(null, 'تم حذف الكورس بنجاح');
+        } catch (\Exception $e) {
+            \Log::error('Error deleting course', [
+                'course_id' => $course->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return self::error('حدث خطأ أثناء حذف الكورس: ' . $e->getMessage());
+        }
     }
 
     public function changeStatus(ChangeStatusRequest $request, Course $course)
@@ -165,6 +187,7 @@ class CourseController extends Controller
         }
     }
 }
+
 
 
 

@@ -14,8 +14,8 @@ class MessageSentEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    protected $message;
-    protected $received;
+    public $message; // جعلها public لتكون متاحة في الحدث
+    public $received; // جعلها public لتكون متاحة في الحدث
 
     /**
      * Create a new event instance.
@@ -46,4 +46,11 @@ class MessageSentEvent implements ShouldBroadcast
             'message' => $this->message
         ];
     }
+
+    // تأكد من أن اسم الحدث صحيح
+    public function broadcastAs()
+    {
+        return 'message.sent';
+    }
 }
+

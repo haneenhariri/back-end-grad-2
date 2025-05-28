@@ -15,7 +15,11 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserFavoritesController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentProgressController;
+use App\Http\Controllers\StudentPurchasesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -103,10 +107,35 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('student-progress/update', [StudentProgressController::class, 'updateProgress']);
     Route::get('student-progress/course/{courseId}', [StudentProgressController::class, 'getCourseProgress']);
     Route::get('student-progress/all-courses', [StudentProgressController::class, 'getAllCoursesProgress']);
+    Route::get('/conversations', [ConversationController::class, 'index']);
 
     // مسار تحديث الكورس متعدد اللغات (جديد)
     Route::post('multilingual/courses/{course}', [CourseController::class, 'updateMultilingual']);
+
+// مسارات لوحة تحكم الأدمن
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin/dashboard')->group(function () {
+    Route::get('/general-stats', [AdminDashboardController::class, 'getGeneralStats']);
+    Route::get('/revenue-stats', [AdminDashboardController::class, 'getRevenueStats']);
+    Route::get('/course-ratings', [AdminDashboardController::class, 'getCourseRatings']);
+    Route::get('/user-stats', [AdminDashboardController::class, 'getUserStats']);
+    Route::get('/course-stats', [AdminDashboardController::class, 'getCourseStats']);
+    Route::get('/latest-transactions', [AdminDashboardController::class, 'getLatestTransactions']);
+    Route::get('/latest-users', [AdminDashboardController::class, 'getLatestUsers']);
+    Route::get('/latest-courses', [AdminDashboardController::class, 'getLatestCourses']);
 });
+
+// مسارات لوحة تحكم الطالب
+Route::middleware(['auth:sanctum', 'role:student'])->prefix('student/dashboard')->group(function () {
+    Route::get('/general-stats', [StudentDashboardController::class, 'getGeneralStats']);
+    Route::get('/progress-stats', [StudentDashboardController::class, 'getProgressStats']);
+    Route::get('/exam-results', [StudentDashboardController::class, 'getExamResults']);
+    Route::get('/recent-activity', [StudentDashboardController::class, 'getRecentActivity']);
+    Route::get('/recommended-courses', [StudentDashboardController::class, 'getRecommendedCourses']);
+});
+
+
+});
+
 
 
 

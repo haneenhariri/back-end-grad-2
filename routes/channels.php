@@ -18,5 +18,7 @@ use Illuminate\Support\Facades\Broadcast;
 //});
 
 Broadcast::channel('chat.user.{id}', function ($user, $id) {
+    \Log::info('Authorizing channel', ['user_id' => $user->id, 'channel_id' => $id]);
     return (int) $user->id === (int) $id;
 });
+

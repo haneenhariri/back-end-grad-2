@@ -14,15 +14,20 @@ class CourseResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // تحديد اللغة من الطلب
+        $locale = $request->query('lang') ?? $request->header('Accept-Language') ?? app()->getLocale();
+
+        // تحديد ما إذا كان يجب عرض جميع الترجمات
         $showAllTranslations = $request->query('all_translations') == true;
 
         return [
             'id' => $this->whenNotNull($this->id),
             'instructor_id' => $this->whenNotNull($this->instructor_id),
             'duration' => $this->whenNotNull($this->duration),
-            'level' => $this->whenNotNull($this->getTranslatedLevel()),
+            'level' => $this->whenNotNull($this->level),
+            'level_translated' => $this->whenNotNull(__('enums.level.' . $this->level, [], $locale)),
             'title' => $this->whenNotNull(
-                $showAllTranslations ? $this->getTranslations('title') : $this->getTranslation('title', app()->getLocale())
+                $showAllTranslations ? $this->getTranslations('title') : $this->getTranslation('title', $locale)
             ),
             'description' => $this->whenNotNull(
                 $showAllTranslations ? $this->getTranslations('description') : $this->getTranslation('description', app()->getLocale())
@@ -43,3 +48,5 @@ class CourseResource extends JsonResource
         ];
     }
 }
+
+
