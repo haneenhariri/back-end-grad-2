@@ -14,15 +14,17 @@ class TransactionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $locale = $request->query('lang') ?? $request->header('Accept-Language') ?? app()->getLocale();
         return [
             'id' => $this->id,
             'account_id' => $this->account_id,
             'intended_account_id' => $this->intended_account_id,
             'amount' => $this->amount,
             'created_at' => $this->created_at,
-            'course' => $this->whenLoaded('course', function () {
-                return optional($this->course)->title;
-            }),
+            'course' => $this->whenLoaded('course', function () use ($request) {
+                    $locale = app()->getLocale(); // أو: $request->getPreferredLanguage()
+                    return optional($this->course)?->getTranslation('title', $locale);
+                }),
             'course_cover' => $this->whenLoaded('course', function () {
                 return optional($this->course)->cover;
             }),

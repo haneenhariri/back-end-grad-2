@@ -94,42 +94,86 @@ class StudentDashboardController extends Controller
         }
     }
 
-    public function getExamResults()
-    {
-        try {
-            $user = Auth::user();
+public function getExamResults()
+{
+    try {
+        $user = Auth::user();
+        \Log::info('Fetching exam results for user: ' . $user->id);
 
-            // الحصول على نتائج الاختبارات
-            $examResults = UserAnswer::where('user_id', $user->id)
-                ->select('course_id')
-                ->selectRaw('SUM(mark) as total_marks')
-                ->selectRaw('COUNT(*) as total_questions')
-                ->groupBy('course_id')
+        // جلب كل الكورسات التي أجاب عليها الطالب
+        $courses = \DB::table('user_answers')
+            ->join('questions', 'user_answers.question_id', '=', 'questions.id')
+            ->join('courses', 'questions.course_id', '=', 'courses.id')
+            ->leftJoin('users as instructors', 'courses.instructor_id', '=', 'instructors.id')
+            ->where('user_answers.user_id', $user->id)
+            ->select(
+                'courses.id as course_id',
+                'courses.title as course_title',
+                'courses.cover as course_image',
+                'instructors.name as instructor_name'
+            )
+            ->distinct()
+            ->get();
+
+        if ($courses->isEmpty()) {
+            return self::success([
+                'status' => 'no_exams',
+                'message' => 'You have not taken any exams yet'
+            ]);
+        }
+
+        $results = [];
+
+        foreach ($courses as $course) {
+            $answers = \DB::table('user_answers')
+                ->join('questions', 'user_answers.question_id', '=', 'questions.id')
+                ->where('user_answers.user_id', $user->id)
+                ->where('questions.course_id', $course->course_id)
+                ->select('user_answers.mark')
                 ->get();
 
-            $formattedResults = [];
+            $hasPending = $answers->contains(function ($answer) {
+                return is_null($answer->mark);
+            });
 
-            foreach ($examResults as $result) {
-                $course = Course::find($result->course_id);
-                if ($course) {
-                    $formattedResults[] = [
-                        'course_id' => $result->course_id,
-                        'course_title' => $course->title,
-                        'score' => $result->total_marks,
-                        'total_questions' => $result->total_questions,
-                        'percentage' => $result->total_questions > 0
-                            ? round(($result->total_marks / $result->total_questions) * 100, 2)
-                            : 0
-                    ];
-                }
+            if ($hasPending) {
+                $results[] = [
+                    'status' => 'pending',
+                    'message' => 'Not all questions have been graded by the instructor yet',
+                    'course_id' => $course->course_id,
+                    'course_title' => $course->course_title,
+                    'course_image' => $course->course_image,
+                    'instructor_name' => $course->instructor_name ?? 'Unknown Instructor',
+                    'price' => $course->price ?? 0
+                ];
+            } else {
+                $score = $answers->sum('mark');
+                $total = $answers->count();
+
+                $results[] = [
+                    'status' => 'completed',
+                    'course_id' => $course->course_id,
+                    'course_title' => $course->course_title,
+                    'course_image' => $course->course_image,
+                    'instructor_name' => $course->instructor_name ?? 'Unknown Instructor',
+                    'price' => $course->price ?? 0,
+                    'score' => $score,
+                    'total_questions' => $total,
+                    'percentage' => $total > 0 ? round(($score / $total) * 100, 2) : 0
+                ];
             }
-
-            return self::success($formattedResults);
-        } catch (\Exception $e) {
-            Log::error('Exam Results Error: ' . $e->getMessage());
-            return self::error('حدث خطأ أثناء جلب نتائج الاختبارات. يرجى المحاولة مرة أخرى.');
         }
+
+        return self::success($results);
+
+    } catch (\Exception $e) {
+        \Log::error("Exam results error: {$e->getMessage()}", [
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return self::error('Failed to load exam results: ' . $e->getMessage());
     }
+}
 
     public function getRecentActivity()
     {
@@ -171,6 +215,7 @@ class StudentDashboardController extends Controller
                 if ($course) {
                     $examActivity[] = [
                         'type' => 'exam',
+                        'cover' => $course->cover,
                         'course_id' => $answer->course_id,
                         'course_title' => $course->title,
                         'details' => "إجابة على سؤال بعلامة {$answer->mark}",
@@ -239,6 +284,10 @@ class StudentDashboardController extends Controller
         }
     }
 }
+
+
+
+
 
 
 

@@ -21,6 +21,8 @@ use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StudentProgressController;
 use App\Http\Controllers\StudentPurchasesController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\InstructorDashboardController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -124,16 +126,18 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin/dashboard')->gr
     Route::get('/latest-courses', [AdminDashboardController::class, 'getLatestCourses']);
 });
 
-// مسارات لوحة تحكم الطالب
-Route::middleware(['auth:sanctum', 'role:student'])->prefix('student/dashboard')->group(function () {
-    Route::get('/general-stats', [StudentDashboardController::class, 'getGeneralStats']);
-    Route::get('/progress-stats', [StudentDashboardController::class, 'getProgressStats']);
-    Route::get('/exam-results', [StudentDashboardController::class, 'getExamResults']);
-    Route::get('/recent-activity', [StudentDashboardController::class, 'getRecentActivity']);
-    Route::get('/recommended-courses', [StudentDashboardController::class, 'getRecommendedCourses']);
+    // Student dashboard routes
+    Route::middleware('role:student')->prefix('student/dashboard')->group(function () {
+        Route::get('/general-stats', [StudentDashboardController::class, 'getGeneralStats']);
+        Route::get('/progress-stats', [StudentDashboardController::class, 'getProgressStats']);
+        Route::get('/exam-results', [StudentDashboardController::class, 'getExamResults']);
+        Route::get('/recent-activity', [StudentDashboardController::class, 'getRecentActivity']);
+        Route::get('/recommended-courses', [StudentDashboardController::class, 'getRecommendedCourses']);
+    });
+
+Route::middleware(['auth:sanctum', 'role:instructor'])->prefix('instructor/dashboard')->group(function () {
+    Route::get('/general-stats', [InstructorDashboardController::class, 'getGeneralStats']);
 });
-
-
 });
 
 

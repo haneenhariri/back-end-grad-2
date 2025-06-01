@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('student_progress', function (Blueprint $table) {
@@ -16,14 +19,17 @@ return new class extends Migration
             $table->boolean('completed')->default(false);
             $table->integer('progress_percentage')->default(0);
             $table->timestamps();
-            
             // Unique constraint to prevent duplicate records
             $table->unique(['user_id', 'lesson_id']);
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('student_progress');
     }
 };
+

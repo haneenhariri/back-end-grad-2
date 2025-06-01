@@ -12,7 +12,9 @@ class CourseService
 {
     public function store(array $data)
     {
-        DB::transaction(function () use ($data) {
+        $course = null;
+
+        DB::transaction(function () use ($data, &$course) {
             $data['instructor_id'] = auth()->user()->id;
             if (array_key_exists('cover', $data)) {
                 $data['cover'] = Storage::disk('public')->put('/course-cover', $data['cover']);
@@ -30,6 +32,8 @@ class CourseService
                 }
             }
         });
+
+        return $course;
     }
 
     public function update(Course $course, array $data)
