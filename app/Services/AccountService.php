@@ -8,11 +8,27 @@ use App\Models\User;
 
 class AccountService
 {
-    public function chargeAccount(array $data){
-        $account = Account::query()->firstOrCreate(['user_id' => $data['user_id']], ['balance' => $data['amount']]);
-        if (!$account->wasRecentlyCreated) {
-            $account->update(['balance' => ($account->balance + $data['amount'])]);
+        public function chargeAccount(array $data)
+    {
+        // تحقق من وجود المستخدم أولاً
+        $user = User::find($data['user_id']);
+        if (!$user) {
+            throw new \Exception("User not found");
         }
+
+        // الحصول على حساب المستخدم
+        $account = $user->account;
+        if (!$account) {
+            throw new \Exception("User account not found");
+        }
+
+        // تحديث الرصيد
+        $account->balance += $data['amount'];
+        $account->save();
+
+        // لا نقوم بإنشاء سجل في جدول transactions
+        // نكتفي بتحديث رصيد الحساب فقط
+
         return $account;
     }
 

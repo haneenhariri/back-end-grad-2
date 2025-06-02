@@ -20,9 +20,18 @@ class AccountController extends Controller
 
     public function chargeAccount(ChargeRequest $request)
     {
-        $account = $this->accountService->chargeAccount($request->validated());
-        return self::success($account);
+        try {
+            $account = $this->accountService->chargeAccount($request->validated());
+            return self::success($account);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Account charge error', [
+                'message' => $e->getMessage(),
+                'data' => $request->validated()
+            ]);
+            return self::error(null, 'Failed to charge account: ' . $e->getMessage());
+        }
     }
+
 
     public function getPayments()
     {
