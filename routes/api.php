@@ -137,6 +137,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin/dashboard')->gr
 
 Route::middleware(['auth:sanctum', 'role:instructor'])->prefix('instructor/dashboard')->group(function () {
     Route::get('/general-stats', [InstructorDashboardController::class, 'getGeneralStats']);
+    Route::get('/ratings', [InstructorDashboardController::class, 'getOverallCourseRatings']);
+    Route::get('/course/{id}/stats', [InstructorDashboardController::class, 'getCourseStats']);
+    Route::get('/course/{id}/revenue', [InstructorDashboardController::class, 'getCourseRevenue']);
 });
 });
 

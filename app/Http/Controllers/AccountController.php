@@ -33,11 +33,34 @@ class AccountController extends Controller
     }
 
 
-    public function getPayments()
-    {
-        $payments = $this->accountService->getPayments();
-        return self::success(TransactionResource::collection($payments));
+public function getPayments()
+{
+    $user = auth()->user();
+    $accountId = $user->account->id;
+    if (!$user) {
+        throw new \Exception("User not authenticated");
     }
+
+    $account = $user->account;
+    if (!$account) {
+        throw new \Exception("User account not found");
+    }
+    // إذا كان الطالب، لا نرجع معاملات فيها intended_account_id = 1
+    $query = Transaction::with(['course', 'account', 'intendedAccount']);
+
+    if ($user && $user->hasRole('student')) {
+        $query->where('intended_account_id', '!=', 1);
+    }
+        $payments = match (true) {
+            $user->hasRole('instructor') => Transaction::where('intended_account_id', $accountId)->with('account.user'),
+            $user->hasRole('admin') => Transaction::where('intended_account_id', Account::find(1)->id)->with('account.user'),
+            default => Transaction::where('account_id', $accountId)->with('intendedAccount.user')
+        };
+
+    $payments = $query->latest()->get();
+
+    return self::success(TransactionResource::collection($payments));
+}
 
     public function allPayment()
     {
@@ -50,5 +73,7 @@ class AccountController extends Controller
         $payments = $this->accountService->getPaymentsForUser($user);
         return self::success(TransactionResource::collection($payments->with('course')->latest()->get()));
     }
+    
+    
 
 }
