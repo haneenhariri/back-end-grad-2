@@ -102,6 +102,16 @@ class Course extends Model
     {
         return $this->hasMany(StudentProgress::class);
     }
-
+    public function answers()
+    {
+        return $this->hasManyThrough(
+            \App\Models\UserAnswer::class,     // النموذج النهائي: إجابات الطلاب
+            \App\Models\Question::class,       // النموذج الوسيط: الأسئلة
+            'course_id',                       // المفتاح الأجنبي في جدول الأسئلة (يشير للكورس)
+            'question_id',                     // المفتاح الأجنبي في جدول الإجابات (يشير للسؤال)
+            'id',                              // المفتاح المحلي في جدول الكورسات
+            'id'                               // المفتاح المحلي في جدول الأسئلة
+        );
+    }
 }
 

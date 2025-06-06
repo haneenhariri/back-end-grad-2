@@ -22,6 +22,7 @@ use App\Http\Controllers\StudentProgressController;
 use App\Http\Controllers\StudentPurchasesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InstructorDashboardController;
+use App\Http\Controllers\PublicCourseController;
 
 
 /*
@@ -50,6 +51,7 @@ Route::get('categories', [CategoryController::class, 'index']);
 // مسارات الكورسات متعددة اللغات (جديدة)
 Route::get('multilingual/courses', [CourseController::class, 'indexMultilingual']);
 Route::get('multilingual/courses/{course}', [CourseController::class, 'showMultilingual']);
+Route::get('public-courses/{id}', [PublicCourseController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [UserController::class, 'logout']);
@@ -93,11 +95,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/exam/{course}', [QuestionController::class, 'index']);
 
     Route::apiResource('/user-answers', UserAnswerController::class)->only('store');
-
-    Route::get('user/{user}/answers/{course}', [UserAnswerController::class, 'index']);
+   Route::get('course/{course}/all-student-answers', [UserAnswerController::class, 'getAllStudentAnswersForCourse']);    Route::get('user/{user}/answers/{course}', [UserAnswerController::class, 'index']);
     Route::put('add-mark/{userAnswer}', [UserAnswerController::class, 'update']);
     Route::get('test-result/{courseId}', [UserAnswerController::class, 'testResult']);
-
+    Route::get('instructor/courses', [UserAnswerController::class, 'getInstructorCourses']);
     Route::post('favorites/{courseId}', [UserFavoritesController::class, 'toggle']);
     Route::get('favorites', [UserFavoritesController::class, 'favoritesForUser']);
     Route::get('recommended-courses', [UserFavoritesController::class, 'recommendedCourses']);
@@ -140,6 +141,7 @@ Route::middleware(['auth:sanctum', 'role:instructor'])->prefix('instructor/dashb
     Route::get('/ratings', [InstructorDashboardController::class, 'getOverallCourseRatings']);
     Route::get('/course/{id}/stats', [InstructorDashboardController::class, 'getCourseStats']);
     Route::get('/course/{id}/revenue', [InstructorDashboardController::class, 'getCourseRevenue']);
+    
 });
 });
 
