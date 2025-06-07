@@ -52,13 +52,15 @@ public function getPayments()
         $query->where('intended_account_id', '!=', 1);
     }
         $payments = match (true) {
-            $user->hasRole('instructor') => Transaction::where('intended_account_id', $accountId)->with('account.user'),
+            $user->hasRole('instructor') => Transaction::where('intended_account_id', $accountId),
             $user->hasRole('admin') => Transaction::where('intended_account_id', Account::find(1)->id)->with('account.user'),
             default => Transaction::where('account_id', $accountId)->with('intendedAccount.user')
         };
 
-    $payments = $query->latest()->get();
-
+        $payments = $payments
+        ->with(['course', 'account.user', 'intendedAccount.user'])
+        ->latest()
+        ->get();
     return self::success(TransactionResource::collection($payments));
 }
 

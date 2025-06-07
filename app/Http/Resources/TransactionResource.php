@@ -35,7 +35,7 @@ public function toArray(Request $request): array
         'account_id' => $this->account_id,
         'intended_account_id' => $this->intended_account_id,
         'amount' => $this->amount,
-        'created_at' => $this->created_at,
+        'created_at' => $this->created_at->format('Y-m-d'),
         'course' => optional($this->course)?->getTranslation('title', $locale),
         'course_cover' => optional($this->course)?->cover,
         'student' => optional($this->account->user)?->name,

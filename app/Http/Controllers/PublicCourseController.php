@@ -12,7 +12,7 @@ class PublicCourseController extends Controller
         try {
             app()->setLocale(request('lang', 'ar'));
 
-            $course = Course::with(['instructor', 'category', 'rates.user'])
+            $course = Course::with(['instructor', 'category', 'rates.user' , 'lessons'])
                 ->findOrFail($id);
 
             return response()->json([

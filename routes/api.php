@@ -95,7 +95,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/exam/{course}', [QuestionController::class, 'index']);
 
     Route::apiResource('/user-answers', UserAnswerController::class)->only('store');
-   Route::get('course/{course}/all-student-answers', [UserAnswerController::class, 'getAllStudentAnswersForCourse']);    Route::get('user/{user}/answers/{course}', [UserAnswerController::class, 'index']);
+    Route::get('course/{course}/all-student-answers', [UserAnswerController::class, 'getAllStudentAnswersForCourse']); 
+    Route::get('user/{user}/answers/{course}', [UserAnswerController::class, 'index']);
     Route::put('add-mark/{userAnswer}', [UserAnswerController::class, 'update']);
     Route::get('test-result/{courseId}', [UserAnswerController::class, 'testResult']);
     Route::get('instructor/courses', [UserAnswerController::class, 'getInstructorCourses']);

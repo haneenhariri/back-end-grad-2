@@ -20,7 +20,6 @@ class UserAnswerResource extends JsonResource
             'answer'=>$this->answer,
             'mark'=>$this->mark,
             'user'=>new UserResource($this->whenLoaded('user')),
-            'question'=>new UserResource($this->whenLoaded('question')),
-        ];
+            'question' => new QuestionResource($this->whenLoaded('question')),        ];
     }
 }

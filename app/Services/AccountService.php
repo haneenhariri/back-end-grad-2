@@ -32,17 +32,26 @@ class AccountService
         return $account;
     }
 
-    public function getPayments(){
-        $user = auth()->user();
-        $accountId = $user->account->id;
+public function getPayments()
+{
+    $user = auth()->user();
+    $accountId = $user->account->id;
 
-        $payments = match (true) {
-            $user->hasRole('instructor') => Transaction::where('intended_account_id', $accountId)->with('account.user'),
-            $user->hasRole('admin') => Transaction::where('intended_account_id', Account::find(1)->id)->with('account.user'),
-            default => Transaction::where('account_id', $accountId)->with('intendedAccount.user')
-        };
-        return $payments->with('course')->latest()->get();
-    }
+    $payments = match (true) {
+        $user->hasRole('instructor') => Transaction::where('intended_account_id', $accountId)
+            ->whereHas('intendedAccount', function ($query) use ($user) {
+                $query->where('user_id', $user->id); // تأكيد إضافي أن الحساب للمدرس نفسه
+            })
+            ->with('account.user'),
+
+        $user->hasRole('admin') => Transaction::where('intended_account_id', Account::find(1)->id)->with('account.user'),
+
+        default => Transaction::where('account_id', $accountId)->with('intendedAccount.user')
+    };
+
+    return $payments->with('course')->latest()->get();
+}
+
 
     public function getPaymentsForUser(User $user){
         $accountId = $user->account->id;

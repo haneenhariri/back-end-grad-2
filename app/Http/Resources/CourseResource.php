@@ -25,7 +25,6 @@ class CourseResource extends JsonResource
             'instructor_id' => $this->whenNotNull($this->instructor_id),
             'duration' => $this->whenNotNull($this->duration),
             'level' => $this->whenNotNull($this->level),
-            'level_translated' => $this->whenNotNull(__('enums.level.' . $this->level, [], $locale)),
             'title' => $this->whenNotNull(
                 $showAllTranslations ? $this->getTranslations('title') : $this->getTranslation('title', $locale)
             ),

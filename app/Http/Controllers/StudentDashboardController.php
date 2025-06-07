@@ -159,7 +159,7 @@ public function getExamResults()
                     'price' => $course->price ?? 0,
                     'score' => $score,
                     'total_questions' => $total,
-                    'percentage' => $total > 0 ? round(($score / $total) * 100, 2) : 0
+                    'percentage' => $total > 0 ? round(($score / $total) * 10, 2) : 0
                 ];
             }
         }
