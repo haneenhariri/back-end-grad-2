@@ -43,10 +43,10 @@ class InstructorDashboardController extends Controller
             'data' => $data
         ]);
     }
-    public function getCourseRevenue($courseId, Request $request)
+    public function getCourseRevenue( Request $request)
     {
         $period = $request->input('period', 'monthly'); // default
-        $data = $this->dashboardService->getCourseRevenueStats($courseId, $period);
+        $data = $this->dashboardService->getRevenueStatsInst($period);
 
         return response()->json([
             'success' => true,

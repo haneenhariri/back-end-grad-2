@@ -141,7 +141,7 @@ Route::middleware(['auth:sanctum', 'role:instructor'])->prefix('instructor/dashb
     Route::get('/general-stats', [InstructorDashboardController::class, 'getGeneralStats']);
     Route::get('/ratings', [InstructorDashboardController::class, 'getOverallCourseRatings']);
     Route::get('/course/{id}/stats', [InstructorDashboardController::class, 'getCourseStats']);
-    Route::get('/course/{id}/revenue', [InstructorDashboardController::class, 'getCourseRevenue']);
+    Route::get('/revenue', [InstructorDashboardController::class, 'getCourseRevenue']);
     
 });
 });
