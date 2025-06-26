@@ -37,6 +37,17 @@ class CourseResource extends JsonResource
             'sub_category_id' => $this->whenNotNull($this->sub_category_id),
             'status' => $this->whenNotNull($this->status),
             'course_language' => $this->whenNotNull($this->getTranslatedLanguage()),
+            'category' => $this->whenLoaded('category', function() {
+                return [
+                    'id' => $this->category->id,
+                    'name' => $this->category->name,
+                    'main_category' => $this->category->mainCategory ? [
+                        'id' => $this->category->mainCategory->id,
+                        'name' => $this->category->mainCategory->name
+                    ] : null
+                ];
+            }),
+            'main_category_name' => $this->category->mainCategory->name ?? null,
 
             'instructor' => $this->whenLoaded('instructor', function () {
                 return optional($this->instructor)->name;

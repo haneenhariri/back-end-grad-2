@@ -64,7 +64,7 @@ class InstructorDashboardService
     }
 public function getRevenueStatsInst($period = 'monthly')
 {
-        $instructorId = auth()->id();
+    $instructorId = auth()->id();
     $now = Carbon::now();
 
     switch ($period) {

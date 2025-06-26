@@ -200,37 +200,82 @@ class AdminDashboardService
     /**
      * الحصول على تقييمات الكورسات
      */
-    public function getCourseRatings()
+    public function getOverallCourseRatings($period = 'monthly')
     {
-        // أعلى 10 كورسات من حيث التقييم
-        $topRatedCourses = Course::select('courses.id', 'courses.title', DB::raw('AVG(rates.rate) as average_rating'), DB::raw('COUNT(rates.id) as ratings_count'))
-            ->join('rates', 'courses.id', '=', 'rates.course_id')
-            ->groupBy('courses.id', 'courses.title')
-            ->orderByDesc('average_rating')
-            ->limit(10)
-            ->get();
+        $now = Carbon::now();
+        switch ($period) {
+            case 'daily':
+                $startDate = $now->copy()->subDays(30);
+                $groupBy = 'date';
+                $dateFormat = '%Y-%m-%d';
+                break;
+            case 'weekly':
+                $startDate = $now->copy()->subWeeks(12);
+                $groupBy = 'week';
+                $dateFormat = '%Y-%u';  // ISO week number
+                break;
+            case 'yearly':
+                $startDate = $now->copy()->subYears(5);
+                $groupBy = 'year';
+                $dateFormat = '%Y';
+                break;
+            case 'this_week':
+                $startDate = $now->copy()->startOfWeek();
+                $endDate = $now->copy()->endOfWeek();
+                $groupBy = 'date';
+                $dateFormat = '%Y-%m-%d';
+                break;
+            case 'this_month':
+                $startDate = $now->copy()->startOfMonth();
+                $endDate = $now->copy()->endOfMonth();
+                $groupBy = 'date';
+                $dateFormat = '%Y-%m-%d';
+                break;
+            case 'this_year':
+                $startDate = $now->copy()->startOfYear();
+                $endDate = $now->copy()->endOfYear();
+                $groupBy = 'month';
+                $dateFormat = '%Y-%m';
+                break;
+            case 'monthly':
+            default:
+                $startDate = $now->copy()->subMonths(12);
+                $groupBy = 'month';
+                $dateFormat = '%Y-%m';
+                break;
+        }
 
-        // توزيع الت قييمات (عدد التقييمات لكل درجة)
-        $ratingDistribution = Rate::select('rate', DB::raw('COUNT(*) as count'))
+        $baseQuery = Rate::select(
+            DB::raw("DATE_FORMAT(created_at, '{$dateFormat}') as period"),
+            DB::raw('AVG(rate) as average_rating'),
+            DB::raw('COUNT(*) as count')
+        )->where('created_at', '>=', $startDate);
+        if (isset($endDate)) {
+            $baseQuery->where('created_at', '<=', $endDate);
+        }
+
+        $results = $baseQuery->groupBy('period')->orderBy('period')->get();
+
+        // توزيع التقييمات العامة (5 إلى 1 نجمة)
+        $totalRatingsQuery = Rate::whereHas('course');  
+        $distributionRaw = Rate::select('rate', DB::raw('COUNT(*) as count'))
             ->groupBy('rate')
-            ->orderBy('rate')
             ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->rate => $item->count];
-            });
+            ->pluck('count', 'rate');
+        $totalRatings = $totalRatingsQuery->count();
 
-        // متوسط التقييم حسب الفئة
-        $ratingsByCategory = Course::select('categories.name as category', DB::raw('AVG(rates.rate) as average_rating'))
-            ->join('rates', 'courses.id', '=', 'rates.course_id')
-            ->join('categories', 'courses.category_id', '=', 'categories.id')
-            ->groupBy('categories.name')
-            ->orderByDesc('average_rating')
-            ->get();
+        $distribution = [];
+        for ($i = 5; $i >= 1; $i--) {
+            $count = $distributionRaw[$i] ?? 0;
+            $distribution[$i] = $totalRatings > 0 ? round(($count / $totalRatings) * 100) : 0;
+        }
+        $overallRating = $totalRatingsQuery->avg('rate');
 
         return [
-            'top_rated_courses' => $topRatedCourses,
-            'rating_distribution' => $ratingDistribution,
-            'ratings_by_category' => $ratingsByCategory,
+            'period' => $period,
+            'timeline' => $results, // تغير التقييمات عبر الزمن
+            'overall_rating' => round($overallRating, 1),
+            'rating_distribution' => $distribution
         ];
     }
 

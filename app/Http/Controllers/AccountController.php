@@ -36,31 +36,40 @@ class AccountController extends Controller
 public function getPayments()
 {
     $user = auth()->user();
-    $accountId = $user->account->id;
+
     if (!$user) {
         throw new \Exception("User not authenticated");
     }
 
     $account = $user->account;
+
     if (!$account) {
         throw new \Exception("User account not found");
     }
-    // إذا كان الطالب، لا نرجع معاملات فيها intended_account_id = 1
-    $query = Transaction::with(['course', 'account', 'intendedAccount']);
 
-    if ($user && $user->hasRole('student')) {
-        $query->where('intended_account_id', '!=', 1);
+    $accountId = $account->id;
+
+    $query = Transaction::with(['course', 'account.user', 'intendedAccount.user']);
+
+    if ($user->hasRole('student')) {
+        // الطالب: يعرض فقط معاملاته لكن لا يرى المحولة إلى حساب المنصة (id = 1)
+        $query->where('account_id', $accountId)
+              ->where('intended_account_id', '!=', 1);
+    } elseif ($user->hasRole('instructor')) {
+        // المدرس: يرى فقط ما حُوّل له
+        $query->where('intended_account_id', $accountId);
+    } elseif ($user->hasRole('admin')) {
+        // الأدمن: يرى ما حُوّل إلى حساب المنصة (id = 1)
+        $query->where('intended_account_id', 1)
+              ->with('account.user');
+    } else {
+        // أي دور آخر (احتياطي)
+        $query->where('account_id', $accountId)
+              ->with('intendedAccount.user');
     }
-        $payments = match (true) {
-            $user->hasRole('instructor') => Transaction::where('intended_account_id', $accountId),
-            $user->hasRole('admin') => Transaction::where('intended_account_id', Account::find(1)->id)->with('account.user'),
-            default => Transaction::where('account_id', $accountId)->with('intendedAccount.user')
-        };
 
-        $payments = $payments
-        ->with(['course', 'account.user', 'intendedAccount.user'])
-        ->latest()
-        ->get();
+    $payments = $query->latest()->get();
+
     return self::success(TransactionResource::collection($payments));
 }
 

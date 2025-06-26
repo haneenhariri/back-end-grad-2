@@ -14,7 +14,6 @@ class InstructorDashboardController extends Controller
     {
         $this->dashboardService = $dashboardService;
     }
-
     public function getGeneralStats()
     {
         $stats = $this->dashboardService->getStats();

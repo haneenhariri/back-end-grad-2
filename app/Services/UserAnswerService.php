@@ -35,4 +35,27 @@ class UserAnswerService
         }
         return $userAnswersQuery->sum('mark');
     }
+    public function checkCompletion($courseId)
+    {
+        $allQuestions = Question::where('course_id', $courseId)->pluck('id');
+        $answeredQuestions = UserAnswer::where('user_id', auth()->id())
+            ->whereIn('question_id', $allQuestions)
+            ->pluck('question_id');
+
+        $unansweredQuestions = $allQuestions->diff($answeredQuestions);
+
+        if ($unansweredQuestions->isEmpty()) {
+            return [
+                'completed' => true,
+                'message' => 'لقد أجبت على جميع أسئلة الاختبار بالفعل',
+                'unanswered_questions' => []
+            ];
+        }
+
+        return [
+            'completed' => false,
+            'message' => 'هناك أسئلة لم يتم الإجابة عليها بعد',
+            'unanswered_questions' => Question::whereIn('id', $unansweredQuestions)->get()
+        ];
+    }
 }

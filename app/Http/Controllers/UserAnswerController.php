@@ -137,7 +137,17 @@ public function getAllStudentAnswersForCourse($courseId)
         $result = $this->userAnswerService->testResult($courseId);
         return self::success($result);
     }
-
+ public function checkTestCompletion($courseId)
+    {
+        try {
+            $result = $this->userAnswerService->checkCompletion($courseId);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
 
 }
 

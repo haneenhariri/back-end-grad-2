@@ -46,7 +46,7 @@ class CourseMultilingualResource extends JsonResource
                 ];
             }),
 
-                       'category' => $this->whenLoaded('category', function() {
+            'category' => $this->whenLoaded('category', function() {
                 return [
                     'id' => $this->category->id,
                     'name' => $this->category->name,

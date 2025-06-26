@@ -103,6 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('favorites/{courseId}', [UserFavoritesController::class, 'toggle']);
     Route::get('favorites', [UserFavoritesController::class, 'favoritesForUser']);
     Route::get('recommended-courses', [UserFavoritesController::class, 'recommendedCourses']);
+    Route::get('/courses/{courseId}/check-test-completion', [UserAnswerController::class, 'checkTestCompletion']);
 
     Route::get('student-instructors',[UserController::class,'studentInstructors']);
     Route::apiResource('messages',MessageController::class)->only(['store','update','destroy']);
@@ -120,7 +121,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin/dashboard')->group(function () {
     Route::get('/general-stats', [AdminDashboardController::class, 'getGeneralStats']);
     Route::get('/revenue-stats', [AdminDashboardController::class, 'getRevenueStats']);
-    Route::get('/course-ratings', [AdminDashboardController::class, 'getCourseRatings']);
+    Route::get('/course-ratings', [AdminDashboardController::class, 'getOverallCourseRatings']);
     Route::get('/user-stats', [AdminDashboardController::class, 'getUserStats']);
     Route::get('/course-stats', [AdminDashboardController::class, 'getCourseStats']);
     Route::get('/latest-transactions', [AdminDashboardController::class, 'getLatestTransactions']);

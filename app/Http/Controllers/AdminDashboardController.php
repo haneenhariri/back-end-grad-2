@@ -41,10 +41,15 @@ class AdminDashboardController extends Controller
     /**
      * الحصول على تقييمات الكورسات
      */
-    public function getCourseRatings()
+    public function getOverallCourseRatings(Request $request)
     {
-        $ratings = $this->dashboardService->getCourseRatings();
-        return self::success($ratings);
+        $period = $request->get('period', 'monthly');
+        $data = $this->dashboardService->getOverallCourseRatings($period);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
     }
 
     /**

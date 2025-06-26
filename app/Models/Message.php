@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Events\MessageSentEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
 
 class Message extends Model
 {
@@ -53,6 +54,30 @@ class Message extends Model
     {
         return $this->belongsTo(User::class, 'received_id', 'id');
     }
+    public function setContentAttribute($value)
+    {
+        $this->attributes['content'] = Crypt::encryptString($value);
+    }
+    // 🔓 فك التشفير تلقائي عند القراءة
+    public function getContentAttribute($value)
+    {
+        try {
+            // تحقق إن كانت الرسالة مشفرة فعلاً
+            // نفترض أن الرسالة المشفرة تحتوي على النمط الخاص بالتشفير من Laravel مثل: "eyJpdiI6..."
+            if (!str_starts_with($value, 'eyJ') && !str_contains($value, '::')) {
+                // غير مشفرة، أرجع القيمة كما هي
+                return $value;
+            }
 
+            // محاولة فك التشفير
+            return \Crypt::decryptString($value);
+        } catch (\Exception $e) {
+            \Log::error('Failed to decrypt message: ' . $e->getMessage(), [
+                'message_id' => $this->id,
+                'value' => $value,
+            ]);
+            return '[رسالة غير قابلة للقراءة]';
+        }
+    }
 }
 
