@@ -14,12 +14,20 @@ class LessonController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(storeRequest $request)
+   public function store(storeRequest $request)
     {
-        Lesson::create($request->validated());
-        return self::success();
+        // إنشاء الدرس وحفظه في متغير
+        $createdLesson = Lesson::create($request->validated());
+        
+        // تحميل العلاقات المطلوبة
+        $lessonWithRelations = $createdLesson->load(['files', 'comments.replies', 'comments.user']);
+        
+        // إرجاع الرد مع بيانات الدرس
+        return self::success(
+            new LessonResource($lessonWithRelations),
+            'Lesson created successfully'
+        );
     }
-
     /**
      * Display the specified resource.
      */
